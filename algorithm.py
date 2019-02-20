@@ -195,6 +195,8 @@ def main():
 
 
             interceptPointARRAY = []
+            predictedPUCK_ARRAY = []
+            predictedLINE_ARRAY = []
 
 
             #if the line is not going straight up/down or left/right
@@ -221,7 +223,7 @@ def main():
                     while(reflect == True):
 
                         interceptPointARRAY.append(interceptPoint)
-                        predictedPUCK = []
+
                         puckPredict = turtle.Turtle()
                         puckPredict.color("green")
                         puckPredict.shape("circle")
@@ -229,13 +231,24 @@ def main():
                         puckPredict.penup()
                         puckPredict.speed(0)
                         puckPredict.setposition(float(interceptPoint[0]), float(interceptPoint[1]))
-                        predictedPUCK.append(puckPredict)
+                        predictedPUCK_ARRAY.append(puckPredict)
+
+
 
                         x1Predict = previousX
                         y1Predict = previousY
 
                         x2Predict = puckPredict.pos()[0]
                         y2Predict = puckPredict.pos()[1]
+
+                        predict_arrow = turtle.Turtle()
+                        predict_arrow.color(color)
+                        predict_arrow.penup()
+                        predict_arrow.setposition(x1Predict, y1Predict)
+                        predict_arrow.pendown()
+                        predict_arrow.goto(x2Predict, y2Predict)
+                        predict_arrow.hideturtle()
+                        predictedLINE_ARRAY.append(predict_arrow)
 
 
                         print("x1: {} y1: {}".format(x1Predict,y1Predict))
@@ -247,7 +260,7 @@ def main():
                             print("No need to calculate DISTANCE")
                             print(puckARRAY[0].pos()[1])
                             distance = math.sqrt((x2Predict - puckARRAY[0].pos()[0]) ** 2 + (y2Predict - puckARRAY[0].pos()[1]) ** 2)
-                            theta = math.acos(float(abs(y2Predict-puckARRAY[0].pos()[1]) / distance))*(180/math.pi)
+                            theta = math.acos(float(abs(x2Predict-puckARRAY[0].pos()[0]) / distance))*(180/math.pi)
                             print("Theta: {}".format(theta))
                         else:
                             print("Distance between [{},{}] and [{},{}]: {}".format(x1Predict,y1Predict,x2Predict,y2Predict,distance))
@@ -287,11 +300,64 @@ def main():
                         puckPredict.penup()
                         puckPredict.speed(0)
                         puckPredict.setposition(reflectionX, reflectionY)
-                        predictedPUCK.append(puckPredict)
+                        predictedPUCK_ARRAY.append(puckPredict)
 
+                        predict_arrow = turtle.Turtle()
+                        predict_arrow.color(color)
+                        predict_arrow.penup()
+                        predict_arrow.setposition(x2Predict, y2Predict)
+                        predict_arrow.pendown()
+                        predict_arrow.goto(reflectionX, reflectionY)
+                        predict_arrow.hideturtle()
+                        predictedLINE_ARRAY.append(predict_arrow)
 
-                        reflect = False
+                        previousX = x2Predict
+                        previousY = y2Predict
 
+                        slope = ((reflectionY - y2Predict) / (reflectionX - x2Predict))+0.001
+                        intercept = reflectionY - (slope * reflectionX)
+                        if ((reflectionX - x2Predict) >= 0):
+                            color = "green"
+                            direction = "right"
+                        else:
+                            color = "red"
+                            direction = "left"
+
+                        interceptPoint = interceptVector(slope,intercept,direction)
+
+                        print("TESTING slope: {}".format(slope))
+                        print("TESTING intercept: {}".format(intercept))
+                        print("TESTING direction: {}".format(direction))
+                        print("TESTING: {}".format(interceptPoint))
+                        if ((interceptPoint[0] > 350) or (interceptPoint[0] < -350)):
+                            reflect = False
+                        else:
+                            reflect = True
+
+                    if (direction == "right"):
+                        finalPoint = [maxX, slope * maxX + intercept]
+                    elif (direction == "left"):
+                        finalPoint = [minX, slope * minX + intercept]
+
+                    print("IMPACT AT: {}".format(finalPoint))
+
+                    # draw point on graph indicating final point
+                    finalPredict = turtle.Turtle()
+                    finalPredict.color("red")
+                    finalPredict.shape("circle")
+                    finalPredict.shapesize(1.5, 1.5)
+                    finalPredict.penup()
+                    finalPredict.speed(0)
+                    finalPredict.setposition(float(finalPoint[0]), float(finalPoint[1]))
+
+                    predict_arrow = turtle.Turtle()
+                    predict_arrow.color(color)
+                    predict_arrow.penup()
+                    predict_arrow.setposition(reflectionX, reflectionY)
+                    predict_arrow.pendown()
+                    predict_arrow.goto(finalPoint[0], finalPoint[1])
+                    predict_arrow.hideturtle()
+                    predictedLINE_ARRAY.append(predict_arrow)
 
                 #if there's no reflection, calculate final point
                 elif(reflect == False):
@@ -311,12 +377,27 @@ def main():
                     finalPredict.speed(0)
                     finalPredict.setposition(float(finalPoint[0]), float(finalPoint[1]))
 
+                    predict_arrow = turtle.Turtle()
+                    predict_arrow.color(color)
+                    predict_arrow.penup()
+                    predict_arrow.setposition(x2, y2)
+                    predict_arrow.pendown()
+                    predict_arrow.goto(finalPoint[0], finalPoint[1])
+                    predict_arrow.hideturtle()
+                    predictedLINE_ARRAY.append(predict_arrow)
+
                 input("Press enter to continue\n")
 
-                for point in predictedPUCK:
+                for point in predictedPUCK_ARRAY:
                     point.clear()
                     point.ht()
-                predictedPUCK = []
+                predictedPUCK_ARRAY = []
+
+                for line in predictedLINE_ARRAY:
+                    line.clear()
+                    line.ht()
+                predictedLINE_ARRAY = []
+
             #calculate final point for straight line trajectory
             #this is a different case than the one above
             elif(straight == True):
