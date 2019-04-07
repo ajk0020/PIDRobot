@@ -81,7 +81,7 @@ def algorithm(x1,y1,x2,y2):
 
         #if intercept point exceeds boundary values then there will be no reflection
         #in other words, the line is pointing towards the goal line
-        if((interceptPoint[0] > 350) or (interceptPoint[0] < -350)):
+        if((interceptPoint[0] > maxX) or (interceptPoint[0] < minX)):
             reflect = False
         else:
             reflect = True
