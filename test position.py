@@ -1,8 +1,3 @@
-from PIDcode import algorithm
-
-inbuf = algorithm(10,20,50,100)
-print(float(inbuf))
-
 import serial
 import time
 from PIDcode import algorithm
@@ -18,7 +13,8 @@ except:
 
 
 while True:
-    inbuf = str(int(algorithm(10,20,50,100)))
+    x, inbuf = algorithm(10,20,50,100)
+    inbuf = str(int(inbuf))
     ser.write(inbuf.encode(encoding='ascii'))
     print ("Sent " + inbuf)
     time.sleep(5)

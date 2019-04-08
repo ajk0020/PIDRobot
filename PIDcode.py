@@ -180,9 +180,12 @@ def algorithm(x1,y1,x2,y2):
         finalPredict = [finalPoint[0], finalPoint[1]]
 
     #remove final point and restart loop, receiving an updated position of puck
-    if(finalPredict):
-        print("IMPACT POINT at: {}".format(finalPoint))
+    #if(finalPredict):
+    #    print("IMPACT POINT at: {}".format(finalPoint))
 
 
-    return(finalPoint[0],finalPoint[1])
+    try:
+        return(finalPoint[0],finalPoint[1])
+    except IndexError:
+        return (-900,-900);
 

@@ -1,5 +1,6 @@
 import serial
 import time
+from PIDCode import algorithm
 
 try:
     ser = serial.Serial("/dev/ttyACM0",9600,timeout=10)
@@ -10,13 +11,8 @@ except:
     if ser.is_open:
         print ("Connection ACM1 opened..")
 
-
 while True:
-    inbuf = input()
-    if inbuf == ('exit'):
-            ser.close()
-            exit()
-    else:
+   
         ser.write(inbuf.encode(encoding='ascii'))
         print ("Sent " + inbuf)
         time.sleep(1)

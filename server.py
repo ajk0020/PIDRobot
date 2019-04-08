@@ -7,7 +7,8 @@ def on_new_client(clientsocket,addr):
         #print(msg)
         clientsocket.send(input("MSG: ").encode())
     clientsocket.close()
-
+    
+def main():
 s = socket.socket()         # Create a socket object
 host = socket.gethostname() # Get local machine name
 port = 5000                # Reserve a port for your service.
