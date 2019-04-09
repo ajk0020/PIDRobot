@@ -89,10 +89,12 @@ def algorithm(x1,y1,x2,y2):
         #if there's a reflection, calculate all theoretical bounce points
         #untiul you reach the goal
         if(reflect == True):
+            numOfReflections = 0
             previousX = x2
             previousY = y2
             while(reflect == True):
 
+                numOfReflections += 1
                 interceptPointARRAY.append(interceptPoint)
                 predictedPUCK_ARRAY.append([interceptPoint[0],interceptPoint[1]])
 
@@ -185,7 +187,10 @@ def algorithm(x1,y1,x2,y2):
 
 
     try:
-        return(finalPoint[0],finalPoint[1])
+        if(numOfReflections > 1):
+            return(-900,-900)
+        else:
+            return (finalPoint[0], finalPoint[1])
     except IndexError:
         return (-900,-900);
 
