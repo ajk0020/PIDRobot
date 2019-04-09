@@ -17,4 +17,4 @@ while True:
     inbuf = str(int(inbuf))
     ser.write(inbuf.encode(encoding='ascii'))
     print ("Sent " + inbuf)
-    time.sleep(5)
+
