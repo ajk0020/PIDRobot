@@ -32,6 +32,8 @@ def interceptVector(slope,intercept,direction):
 
 def algorithm(x1,y1,x2,y2):
 
+    numOfReflections = 0
+
     puckARRAY = []
 
     finalPoint = ""
