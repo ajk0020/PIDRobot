@@ -17,35 +17,73 @@
 #define NEG_Z_LIM 9   //The y axis neg limit switch
 
 int relativePosition = 0;
+int oldx = 0;
 
-void step(boolean dir, byte dirPin, byte stepperPin, int steps)
-{          
-      int delayCount = 600; // we start accelerating at 10 rpm, 1/(delayE-6*200steps)
-      int distance = steps - relativePosition;
+void setup()
+{
+  
+  Serial.begin(9600);
+  Serial.setTimeout(10);
+  pinMode(POS_Z_LIM, INPUT_PULLUP);
+  pinMode(NEG_Z_LIM, INPUT_PULLUP);
+  pinMode(A_DIR, OUTPUT); pinMode(A_STP, OUTPUT);
+  pinMode(Z_DIR, OUTPUT); pinMode(Z_STP, OUTPUT);
+  pinMode(EN, OUTPUT); 
+  digitalWrite(EN, HIGH);
+  centerPosition();
      
+}
+
+void loop() {
+    
+    while(Serial.available() > 0) {
+      int x = Serial.parseInt();    
+     
+    
+    if(Serial.read()){
+      Serial.print("X");
+      Serial.println(x); 
+      if((x <= 300) && (x > 0))
+        if(abs(oldx-x) > 10)
+        {
+          step(A_DIR, A_STP, x*9); //The X axis motor reversals 1 circle, 200 steps for a circle
+        }//step(Z_DIR, Z_STP, 1); //The X axis motor reversals 1 circle, 200 steps for a circle
+     oldx = x;
+    }  
+   }
+   //if(relativePosition != 1350)
+      //step(A_DIR, A_STP, 1350); 
+}
+
+void step(byte dirPin, byte stepperPin, int steps)
+{   
+      Serial.println("not ready");  
+      bool dir;
+      int delayCount = 700; // we start accelerating at 10 rpm, 1/(delayE-6*200steps)
+      int distance = steps - relativePosition;
+      relativePosition = steps;
+       
       if(distance > 0){
-         digitalWrite(Z_DIR, true);
+         digitalWrite(dirPin, true);
+//         delay(1);
+         dir = true;
+//         Serial.println("TRUE DIR");
       }
       else{
-          digitalWrite(Z_DIR, false);
+          digitalWrite(dirPin, false);
+//          delay(1);
+          dir = false;
+//          Serial.println("FALSE DIR");
       }
       distance = abs(distance);
+//      Serial.print("Distance: ");
+//      Serial.println(distance);
+
+      if((!digitalRead(POS_Z_LIM))|| (!digitalRead(NEG_Z_LIM)))
+        backoff(dirPin, stepperPin);
       
-      if(!digitalRead(POS_Z_LIM) || !digitalRead(NEG_Z_LIM)){
-        digitalWrite(dirPin, !dir);
-        delayCount = 500;
-         for (int i = 0; i < 100; i++) {
-          digitalWrite(EN, LOW);  // Low enable provides power to all motors
-          digitalWrite(stepperPin, HIGH);
-          delayMicroseconds(delayCount);
-          digitalWrite(stepperPin, LOW);
-          delayMicroseconds(delayCount); 
-          digitalWrite(EN, HIGH); // High enable removes power from all motors
-         }
-      }
-//       for (int i = 0; ((i < steps) && (digitalRead(POS_Z_LIM)) && (digitalRead(NEG_Z_LIM))); i++) {
-          
-      while((distance > 0) && (digitalRead(POS_Z_LIM)) && (digitalRead(NEG_Z_LIM))){
+      while((distance > 0)){
+        if((digitalRead(POS_Z_LIM)) && (digitalRead(NEG_Z_LIM))){         // if limit switches are open
            digitalWrite(EN, LOW);  // Low enable provides power to all motors
             digitalWrite(stepperPin, HIGH);
             delayMicroseconds(delayCount);
@@ -54,38 +92,31 @@ void step(boolean dir, byte dirPin, byte stepperPin, int steps)
            digitalWrite(EN, HIGH); // High enable removes power from all motors
           
           distance--;
+        }
+        else{
+          backoff(dirPin, stepperPin);
+          distance = -1;
+          }
+        
+        (delayCount > 300) ? delayCount -= 1 : delayCount -= 0;
       }
-//            (delayCount > 300) ? delayCount -= 1 : delayCount -= 0;
-            
-                 if(!digitalRead(POS_Z_LIM) || !digitalRead(NEG_Z_LIM)){
-                   digitalWrite(dirPin, !dir);
-                   delayCount = 500;
-                   for (int i = 0; i < 500; i++) {
-                    digitalWrite(EN, LOW);  // Low enable provides power to all motors
-                      digitalWrite(stepperPin, HIGH);
-                      delayMicroseconds(delayCount);
-                      digitalWrite(stepperPin, LOW);
-                      delayMicroseconds(delayCount); 
-                    digitalWrite(EN, HIGH); // High enable removes power from all motors
-                     }
-//                  break;
-                  }
-                  Serial.print("RelPos: ");
-                  Serial.println(relativePosition);
+      Serial.println("ready");
 }
 
 void centerPosition(){
+  
   int delayCount = 600;
   digitalWrite(A_DIR, true);
+  delay(1);
   
-  while(digitalRead(POS_Z_LIM)) {
+   do {
            digitalWrite(EN, LOW);  // Low enable provides power to all motors
             digitalWrite(A_STP, HIGH);
             delayMicroseconds(delayCount);
             digitalWrite(A_STP, LOW);
             delayMicroseconds(delayCount);      
            digitalWrite(EN, HIGH); // High enable removes power from all motors
-   }
+   } while(digitalRead(POS_Z_LIM));
    
    if(!digitalRead(POS_Z_LIM)){
     relativePosition = 0;
@@ -101,32 +132,28 @@ void centerPosition(){
         relativePosition++;
     } 
    }
+   Serial.print("RelPos: ");
+   Serial.println(relativePosition);
 }
 
-void setup()
-{
-  Serial.begin(9600);
-  pinMode(POS_Z_LIM, INPUT_PULLUP);
-  pinMode(NEG_Z_LIM, INPUT_PULLUP);
-  pinMode(A_DIR, OUTPUT); pinMode(A_STP, OUTPUT);
-  pinMode(Z_DIR, OUTPUT); pinMode(Z_STP, OUTPUT);
-  pinMode(EN, OUTPUT); 
-  
-  centerPosition();
-     
-}
-
-void loop() {
-    while(Serial.available() > 0) {
-      int x = Serial.parseInt();    
-     
-     if(Serial.read()){
-
-      Serial.print("X");
-      Serial.println(x, DEC);
-      
-      step(true,A_DIR, A_STP, x); //The X axis motor reversals 1 circle, 200 steps for a circle
-
+void backoff(byte dirPin, byte stepperPin){
+  int delayCount = 600;
+    if(!digitalRead(POS_Z_LIM)){
+      digitalWrite(dirPin, false);
+      relativePosition = 2690;
     }
-   }
+    else if(!digitalRead(NEG_Z_LIM)){
+      digitalWrite(dirPin, true);
+      relativePosition = 10;
+    }
+    delay(1);
+    
+          for(int i = 0; i < 10; i++){
+             digitalWrite(EN, LOW);  // Low enable provides power to all motors
+            digitalWrite(stepperPin, HIGH);
+            delayMicroseconds(delayCount);
+            digitalWrite(stepperPin, LOW);
+            delayMicroseconds(delayCount);      
+           digitalWrite(EN, HIGH); // High enable removes power from all motors
+          }
 }
