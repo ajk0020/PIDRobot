@@ -36,20 +36,23 @@ void setup()
 
 void loop() {
     
-    while(Serial.available() > 0) {
+    
+    if(Serial.available() > 0) {
       int x = Serial.parseInt();    
-     
+     Serial.println("not ready");  
     
     if(Serial.read()){
       Serial.print("X");
-      Serial.println(x); 
-      if((x <= 300) && (x > 0))
+      Serial.println(x);
+      step(A_DIR, A_STP, x*9); //The X axis motor reversals 1 circle, 200 steps for a circle 
+      /*if((x <= 300) && (x > 0))
         if(abs(oldx-x) > 10)
         {
-          step(A_DIR, A_STP, x*9); //The X axis motor reversals 1 circle, 200 steps for a circle
+          
         }//step(Z_DIR, Z_STP, 1); //The X axis motor reversals 1 circle, 200 steps for a circle
-     oldx = x;
+     oldx = x;*/
     }  
+      Serial.println("ready");
    }
    //if(relativePosition != 1350)
       //step(A_DIR, A_STP, 1350); 
@@ -57,9 +60,9 @@ void loop() {
 
 void step(byte dirPin, byte stepperPin, int steps)
 {   
-      Serial.println("not ready");  
+      
       bool dir;
-      int delayCount = 700; // we start accelerating at 10 rpm, 1/(delayE-6*200steps)
+      int delayCount = 600; // we start accelerating at 10 rpm, 1/(delayE-6*200steps)
       int distance = steps - relativePosition;
       relativePosition = steps;
        
@@ -98,9 +101,9 @@ void step(byte dirPin, byte stepperPin, int steps)
           distance = -1;
           }
         
-        (delayCount > 300) ? delayCount -= 1 : delayCount -= 0;
+        (delayCount > 150) ? delayCount -= 1 : delayCount -= 0;
       }
-      Serial.println("ready");
+     
 }
 
 void centerPosition(){
